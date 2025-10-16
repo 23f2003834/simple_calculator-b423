@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Advanced Calculator</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 320px;
+    margin: 50px auto;
+    padding: 10px;
+    background: #f9f9f9;
+  }
+  .calculator {
+    display: flex;
+    flex-direction: column;
+  }
+  #display {
+    height: 40px;
+    font-size: 1.2em;
+    padding: 5px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    background: #fff;
+    overflow-x: auto;
+  }
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+  }
+  button {
+    padding: 15px;
+    font-size: 1em;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div class="calculator">
+  <div id="display">0</div>
+  <div class="buttons">
+    <button data-action="clear">C</button>
+    <button data-op="/">&#247;</button>
+    <button data-op="*">&times;</button>
+    <button data-op="-">-</button>
+    <button data-num="7">7</button>
+    <button data-num="8">8</button>
+    <button data-num="9">9</button>
+    <button data-op="+">+</button>
+    <button data-num="4">4</button>
+    <button data-num="5">5</button>
+    <button data-num="6">6</button>
+    <button data-num="1">1</button>
+    <button data-num="2">2</button>
+    <button data-num="3">3</button>
+    <button data-num="0" style="grid-column: span 2;">0</button>
+    <button data-num=".">.</button>
+    <button data-equal>=</button>
+  </div>
+</div>
+<script>
+  document.title = 'Advanced Calculator';
+
+  const display = document.getElementById('display');
+  const buttons = document.querySelector('.buttons');
+
+  let currentInput = '0';
+  let formula = '';
+
+  function updateDisplay() {
+    display.textContent = currentInput;
+  }
+
+  updateDisplay();
+
+  buttons.addEventListener('click', (e) => {
+    const target = e.target;
+    if (!target.matches('button')) return;
+
+    const action = target.getAttribute('data-action');
+    const num = target.getAttribute('data-num');
+    const op = target.getAttribute('data-op');
+    const equal = target.hasAttribute('data-equal');
+
+    if (action === 'clear') {
+      currentInput = '0';
+      formula = '';
+    } else if (num !== null) {
+      if (currentInput === '0' && num !== '.') {
+        currentInput = num;
+      } else {
+        currentInput += num;
+      }
+    } else if (op !== null) {
+      // Prevent multiple operators
+      if (formula && /[+\-*/]$/.test(formula)) {
+        formula = formula.slice(0, -1) + op;
+      } else {
+        formula += currentInput + op;
+      }
+      currentInput = '';
+    } else if (equal) {
+      // Complete formula
+      if (currentInput !== '') {
+        formula += currentInput;
+      }
+
+      // Basic validation
+      if (/[^0-9+\-*/.]/.test(formula)) {
+        display.textContent = 'Error';
+        currentInput = '0';
+        formula = '';
+        return;
+      }
+
+      try {
+        // Check division by zero
+        if (/\/0($|[^0-9])/.test(formula)) {
+          display.textContent = 'Error: Div by 0';
+          currentInput = '0';
+          formula = '';
+          return;
+        }
+        const result = eval(formula);
+        if (Number.isFinite(result)) {
+          currentInput = String(result);
+          formula = '';
+        } else {
+          currentInput = 'Error';
+          formula = '';
+        }
+      } catch {
+        currentInput = 'Error';
+        formula = '';
+      }
+    }
+
+    updateDisplay();
+  });
+</script>
+</body>
+</html>
